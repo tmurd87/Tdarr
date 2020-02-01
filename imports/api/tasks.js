@@ -31,18 +31,13 @@ if (Meteor.isServer) {
       });
 
 
-
-  }
-
-
-  //lowdb test
+        //lowdb test
 
 const low = require('lowdb')
 const lodashId = require('lodash-id')
 const FileSync = require('lowdb/adapters/FileSync')
 
-//var homePath = require("os").homedir()
-var homePath = 'C:\\Users\\H\\Documents'
+var homePath = require("os").homedir() + '/Documents'
 
 //Init databases
 
@@ -109,6 +104,13 @@ ClientJSON.defaults({ ClientJSONDB: [] })
   export const ClientJSONDB = ClientJSON
   .defaults({ ClientJSONDB: [] })
   .get('ClientJSONDB')
+
+
+
+
+  }
+
+
 
 
   if (Meteor.isServer) {

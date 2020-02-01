@@ -13,8 +13,6 @@ import { Button } from 'react-bootstrap';
 
 import { StatisticsDB, FileDB, GlobalOptionsDB, ClientDB } from '../../api/tasks.js';
 
-import { GlobalOptionsJSONDB } from '../../api/tasks.js';
-
 import Workers from './tab_Transcoding_Worker.jsx';
 import ReactTable from "react-table";
 
@@ -1197,7 +1195,7 @@ export default withTracker(() => {
     clientDB: ClientDB.find({}).fetch(),
     statistics: StatisticsDB.find({}).fetch(),
 
-    globalOptionsJSONDB: GlobalOptionsJSONDB.value()
+ 
 
 
   };
