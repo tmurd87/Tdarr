@@ -9,7 +9,7 @@ import {
   Switch,
 } from 'react-router-dom';
 
-import {GlobalSettingsDB} from '../api/tasks.js';
+import {GlobalOptionsDB} from '../api/tasks.js';
 import TabDev from '../ui/tab_Dev.jsx';
 import TabHelp from '../ui/tab_Help.jsx';
 import TabLog from '../ui/tab_Log.jsx';
@@ -44,11 +44,11 @@ const AppRouter = () => {
   
 
   React.useEffect(() => {
-    Meteor.subscribe('GlobalSettingsDB', () => {
-      const updatedBasePath = GlobalSettingsDB.find({}).fetch()[0].basePath;
+    Meteor.subscribe('GlobalOptionsDB', () => {
+      const updatedBasePath = GlobalOptionsDB.find({}).fetch()[0].basePath;
       setBasePath(updatedBasePath);
 
-      var version =  GlobalSettingsDB.find({}).fetch()[0].version;
+      var version =  GlobalOptionsDB.find({}).fetch()[0].version;
 
       var newVersion = 1.103
 
@@ -140,7 +140,7 @@ const AppRouter = () => {
         
         `)
 
-        GlobalSettingsDB.upsert(
+        GlobalOptionsDB.upsert(
           "globalsettings",
           {
             $set: {

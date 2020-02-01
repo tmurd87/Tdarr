@@ -11,7 +11,9 @@ import { render } from 'react-dom';
 import { Button } from 'react-bootstrap';
 
 
-import { StatisticsDB, FileDB, GlobalSettingsDB, ClientDB } from '../../api/tasks.js';
+import { StatisticsDB, FileDB, GlobalOptionsDB, ClientDB } from '../../api/tasks.js';
+
+import { GlobalOptionsJSONDB } from '../../api/tasks.js';
 
 import Workers from './tab_Transcoding_Worker.jsx';
 import ReactTable from "react-table";
@@ -66,7 +68,7 @@ class App extends Component {
     if(process == "increase"){
 
 
-      GlobalSettingsDB.update("globalsettings",
+      GlobalOptionsDB.update("globalsettings",
           {
             $inc: { [workerType]: 1 }
           }
@@ -76,7 +78,7 @@ class App extends Component {
 
       if(globsettings[workerType] > 0){
 
-        GlobalSettingsDB.update("globalsettings",
+        GlobalOptionsDB.update("globalsettings",
         {
           $inc: { [workerType]: -1 }
         }
@@ -120,7 +122,7 @@ class App extends Component {
           x={item[slider]}
           onChange={({ x }) => {
 
-            GlobalSettingsDB.upsert('globalsettings',
+            GlobalOptionsDB.upsert('globalsettings',
               {
                 $set: {
                   [slider]: x,
@@ -201,7 +203,7 @@ class App extends Component {
       
       value={item.lowCPUPriority} onToggle={() => {
 
-        GlobalSettingsDB.upsert('globalsettings',
+        GlobalOptionsDB.upsert('globalsettings',
           {
             $set: {
               lowCPUPriority: !item.lowCPUPriority,
@@ -227,7 +229,7 @@ class App extends Component {
 
     if (event.target.checked == true) {
 
-      GlobalSettingsDB.upsert(
+      GlobalOptionsDB.upsert(
         "globalsettings",
         {
           $set: {
@@ -250,7 +252,7 @@ class App extends Component {
 
         if(type == `alternateLibraries` && event.target.checked){
 
-          GlobalSettingsDB.upsert(
+          GlobalOptionsDB.upsert(
             "globalsettings",
             {
               $set: {
@@ -263,7 +265,7 @@ class App extends Component {
     
         if(type == `prioritiseLibraries` && event.target.checked){
     
-          GlobalSettingsDB.upsert(
+          GlobalOptionsDB.upsert(
             "globalsettings",
             {
               $set: {
@@ -273,7 +275,7 @@ class App extends Component {
           );
         }
 
-        GlobalSettingsDB.upsert(
+        GlobalOptionsDB.upsert(
           "globalsettings",
           {
             $set: {
@@ -974,7 +976,20 @@ class App extends Component {
 
 <p>Items: <input type="text" className="tableSize"  defaultValue={this.props.globalSettings && this.props.globalSettings[0] && this.props.globalSettings[0].tableSize ? this.props.globalSettings[0].tableSize : "" } onChange={(event) => {
   
-  GlobalSettingsDB.upsert(
+  GlobalOptionsDB.upsert(
+    "globalsettings",
+    {
+      $set: {
+        tableSize: event.target.value,
+      }
+    }
+  );
+}}></input></p>
+
+
+<p>Items: <input type="text" className="tableSize"  defaultValue={this.props.globalOptionsJSON && this.props.globalOptionsJSON[0] && this.props.globalOptionsJSON[0].tableSize ? this.props.globalOptionsJSON[0].tableSize : "" } onChange={(event) => {
+  
+  GlobalOptionsDB.upsert(
     "globalsettings",
     {
       $set: {
@@ -1167,8 +1182,8 @@ class App extends Component {
 
 export default withTracker(() => {
 
-  Meteor.subscribe('GlobalSettingsDB');
-  Meteor.subscribe('SettingsDB');
+  Meteor.subscribe('GlobalOptionsDB');
+  Meteor.subscribe('LibraryOptionsDB');
   Meteor.subscribe('ClientDB');
   Meteor.subscribe('StatisticsDB');
 
@@ -1176,11 +1191,13 @@ export default withTracker(() => {
   return {
 
 
-    globalSettings: GlobalSettingsDB.find({}, {}).fetch(),
-    settingsDB:GlobalSettingsDB.find({}, {}).fetch(),
+    globalSettings: GlobalOptionsDB.find({}, {}).fetch(),
+    settingsDB:GlobalOptionsDB.find({}, {}).fetch(),
 
     clientDB: ClientDB.find({}).fetch(),
     statistics: StatisticsDB.find({}).fetch(),
+
+    globalOptionsJSONDB: GlobalOptionsJSONDB.value()
 
 
   };

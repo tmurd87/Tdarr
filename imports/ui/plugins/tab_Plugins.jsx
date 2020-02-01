@@ -9,7 +9,7 @@ import { Button } from 'react-bootstrap';
 import Modal from "reactjs-popup";
 
 import ClipLoader from 'react-spinners/ClipLoader';
-import { GlobalSettingsDB } from '../../api/tasks.js';
+import { GlobalOptionsDB } from '../../api/tasks.js';
 
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 
@@ -51,7 +51,7 @@ class App extends Component {
 
   updatePlugins = () => {
 
-    GlobalSettingsDB.upsert('globalsettings',
+    GlobalOptionsDB.upsert('globalsettings',
       {
         $set: {
           pluginSearchLoading: true,
@@ -142,7 +142,7 @@ class App extends Component {
       }
 
 
-      GlobalSettingsDB.upsert('globalsettings',
+      GlobalOptionsDB.upsert('globalsettings',
         {
           $set: {
             pluginSearchLoading: true,
@@ -380,7 +380,7 @@ class App extends Component {
 
       })
     } catch (err) {
-      GlobalSettingsDB.upsert('globalsettings',
+      GlobalOptionsDB.upsert('globalsettings',
         {
           $set: {
             pluginSearchLoading: false,
@@ -402,7 +402,7 @@ class App extends Component {
 
           <Tabs selectedIndex={this.props.globalSettings != undefined && this.props.globalSettings[0] != undefined && this.props.globalSettings[0].selectedPluginTab != undefined ? this.props.globalSettings[0].selectedPluginTab : 0} onSelect={tabIndex => {
 
-            GlobalSettingsDB.upsert('globalsettings',
+            GlobalOptionsDB.upsert('globalsettings',
               {
                 $set: {
                   selectedPluginTab: tabIndex,
@@ -500,7 +500,7 @@ class App extends Component {
                     <br />
 
                     <p onClick={() => {
-                      GlobalSettingsDB.upsert(
+                      GlobalOptionsDB.upsert(
                         "globalsettings",
                         {
                           $set: {
@@ -514,7 +514,7 @@ class App extends Component {
                     <br />
 
                     <p onClick={() => {
-                        GlobalSettingsDB.upsert(
+                        GlobalOptionsDB.upsert(
                           "globalsettings",
                           {
                             $set: {
@@ -635,12 +635,12 @@ class App extends Component {
 
 export default withTracker(() => {
 
-  Meteor.subscribe('GlobalSettingsDB');
+  Meteor.subscribe('GlobalOptionsDB');
 
 
   return {
 
-    globalSettings: GlobalSettingsDB.find({}, {}).fetch(),
+    globalSettings: GlobalOptionsDB.find({}, {}).fetch(),
 
   };
 })(App);

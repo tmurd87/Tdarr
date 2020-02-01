@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import Checkbox from '@material-ui/core/Checkbox';
 import { Button} from 'react-bootstrap';
 
-import { SettingsDB} from '../../api/tasks.js';
+import { LibraryOptionsDB} from '../../api/tasks.js';
 
 
 export default class Plugin extends Component {
@@ -26,7 +26,7 @@ export default class Plugin extends Component {
 
     deleteThisPlugin(){
 
-      var thisLibraryPlugins = SettingsDB.find({ _id: this.props.DB_id }, { sort: { createdAt: 1 } }).fetch()[0].pluginIDs
+      var thisLibraryPlugins = LibraryOptionsDB.find({ _id: this.props.DB_id }, { sort: { createdAt: 1 } }).fetch()[0].pluginIDs
 
 
       for (var i = 0; i < thisLibraryPlugins.length; i++) {
@@ -38,7 +38,7 @@ export default class Plugin extends Component {
         }
       }
 
-      SettingsDB.upsert(
+      LibraryOptionsDB.upsert(
         this.props.DB_id,
         {
           $set: {
@@ -99,7 +99,7 @@ export default class Plugin extends Component {
 
 
 
-  var thisLibraryPlugins = SettingsDB.find({ _id: this.props.DB_id }, { sort: { createdAt: 1 } }).fetch()[0].pluginIDs
+  var thisLibraryPlugins = LibraryOptionsDB.find({ _id: this.props.DB_id }, { sort: { createdAt: 1 } }).fetch()[0].pluginIDs
 
   if (this.props.pluginItem.priority == 0) {
 
@@ -113,7 +113,7 @@ export default class Plugin extends Component {
 
     thisLibraryPlugins.splice(this.props.pluginItem.priority - 1,2,thisPlugin,pluginBelow)
 
-    SettingsDB.upsert(
+    LibraryOptionsDB.upsert(
       this.props.DB_id,
       {
         $set: {
@@ -132,7 +132,7 @@ export default class Plugin extends Component {
 
 
 
-  var thisLibraryPlugins = SettingsDB.find({ _id: this.props.DB_id }, { sort: { createdAt: 1 } }).fetch()[0].pluginIDs
+  var thisLibraryPlugins = LibraryOptionsDB.find({ _id: this.props.DB_id }, { sort: { createdAt: 1 } }).fetch()[0].pluginIDs
 
   if (this.props.pluginItem.priority == thisLibraryPlugins.length - 1) {
 
@@ -146,7 +146,7 @@ export default class Plugin extends Component {
 
     thisLibraryPlugins.splice(this.props.pluginItem.priority,2,pluginAbove,thisPlugin)
 
-    SettingsDB.upsert(
+    LibraryOptionsDB.upsert(
       this.props.DB_id,
       {
         $set: {

@@ -7,13 +7,12 @@ import '../imports/api/tasks.js';
 
 
 
-import { LogDB, FileDB, SettingsDB, GlobalSettingsDB, StatisticsDB, ClientDB } from '../imports/api/tasks.js';
+import { LogDB, FileDB, LibraryOptionsDB, GlobalOptionsDB, StatisticsDB, ClientDB } from '../imports/api/tasks.js';
+
+
+import { LogJSONDB, FileJSONDB, LibraryOptionsJSONDB, GlobalOptionsJSONDB, StatisticsJSONDB, ClientJSONDB } from '../imports/api/tasks.js';
 
 console.log("Tdarr started")
-
-
-
-
 
 
 //Globals
@@ -92,7 +91,7 @@ if (process.env.NODE_ENV == 'production') {
 
   if (process.env.BASE) {
 
-    GlobalSettingsDB.upsert(
+    GlobalOptionsDB.upsert(
       "globalsettings",
       {
         $set: {
@@ -103,7 +102,7 @@ if (process.env.NODE_ENV == 'production') {
 
   } else {
 
-    GlobalSettingsDB.upsert(
+    GlobalOptionsDB.upsert(
       "globalsettings",
       {
         $set: {
@@ -119,7 +118,7 @@ if (process.env.NODE_ENV == 'production') {
   var homePath = home + '/Documents'
   process.env.homePath = homePath
 
-  GlobalSettingsDB.upsert(
+  GlobalOptionsDB.upsert(
     "globalsettings",
     {
       $set: {
@@ -200,6 +199,12 @@ if (!fs.existsSync(homePath + "/Tdarr/Backups")) {
 }
 
 
+if (!fs.existsSync(homePath + "/Tdarr/DB")) {
+  fs.mkdirSync(homePath + "/Tdarr/DB");
+
+}
+
+
 //READ  variables from json file
 if (fs.existsSync(homePath + "/Tdarr/Data/env.json")) {
 
@@ -212,7 +217,7 @@ if (fs.existsSync(homePath + "/Tdarr/Data/env.json")) {
     if (jsonConfig.BASE != undefined) {
 
 
-      GlobalSettingsDB.upsert(
+      GlobalOptionsDB.upsert(
         "globalsettings",
         {
           $set: {
@@ -237,6 +242,22 @@ if (fs.existsSync(homePath + "/Tdarr/Data/env.json")) {
 //fs.writeFileSync(homePath + "/Tdarr/Data/test.txt", "Hello", 'utf8');
 
 //
+
+
+//import {FileDB, LogDB, LibraryOptionsDB, GlobalOptionsDB, StatisticsDB, ClientDB } from '../imports/api/tasks.js';
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -273,49 +294,129 @@ function getDateNow() {
 var collections = [
   [FileDB, "FileDB"],
   [LogDB, "LogDB"],
-  [SettingsDB, "SettingsDB"],
-  [GlobalSettingsDB, "GlobalSettingsDB"],
+  [LibraryOptionsDB, "LibraryOptionsDB"],
+  [GlobalOptionsDB, "GlobalOptionsDB"],
   [StatisticsDB, "StatisticsDB"],
 ]
 
 Meteor.methods({
-  'modifyFileDB'(mode, fileID, obj) {
+  'modifyDB'(collName, mode, fileID, obj) {
     //mode == add, update, delete
     try {
 
 
+      //insert: if _id found, throws error, else inserts object into collName/array
+
+      // db._.insert(db.FileDB, { id: 1, body: 'New post' })
+      //     .write()
+
+
+      //update: If _id found, adds/updates key/values. If not found, nothing (no error thrown)
+      // collName.updateById('1216', { body: 'Updated body3' })
+      //   .write()
+
+
+      //Upsert: Adds/overwrites key values if _id exists, else creates new _id and adds key/values
+      //  collName.upsert({_id:'1216',header:'test2',body: 'Updated body565' })
+      //  .write()
+
+      switch (collName) {
+        case 'FileJSONDB':
+          collNameObj = FileJSONDB;
+          break;
+          case 'LogJSONDB':
+          collNameObj = LogJSONDB;
+          break;
+          case 'LibraryOptionsJSONDB':
+          collNameObj = LibraryOptionsJSONDB;
+          break;
+          case 'GlobalOptionsJSONDB':
+          collNameObj = GlobalOptionsJSONDB;
+          break;
+          case 'StatisticsJSONDB':
+          collNameObj = StatisticsJSONDB;
+          break;
+          case 'ClientDB':
+          collNameObj = ClientDB;
+          break;
+      }
+
+
       if (mode == 'insert') {
 
-        FileDB.insert(obj);
+        // FileDB.insert(obj);
+
+        collNameObj
+          .insert(obj)
+          .write()
+
 
 
       } else if (mode == 'update') {
 
-        FileDB.update(fileID,
-          {
-            $set: obj
-          });
+        // FileDB.update(fileID,
+        //   {
+        //     $set: obj
+        //   });
+
+
+        collNameObj.updateById(fileID, obj)
+          .write()
+
 
       } if (mode == 'upsert') {
 
-        FileDB.upsert(fileID,
-          {
-            $set: obj
-          });
+        // FileDB.upsert(fileID,
+        //   {
+        //     $set: obj
+        //   });
+
+
+
+        try {
+
+          var res = collNameObj.value().filter(row => row._id == fileID).length
+
+        } catch (err) {
+          var res = 0
+        }
+
+        if (res == 0 || res == undefined) {
+
+          collNameObj.upsert(obj)
+            .write()
+
+        } else {
+
+          collNameObj.updateById(fileID, obj)
+            .write()
+
+        }
+
+        
 
       } else if (mode == 'removeOne') {
 
-        FileDB.remove(fileID);
+        // FileDB.remove(fileID);
+        collNameObj.removeById(fileID)
+          .write()
 
       } else if (mode == 'removeByDB') {
 
-        FileDB.remove({ DB: fileID });
+        //FileDB.remove({ DB: fileID });
+
+        collNameObj.removeWhere({ DB: fileID })
+          .write()
+
 
 
       } else if (mode == 'removeAll') {
 
+        db.set(collName, {})
+          .write()
 
-        FileDB.remove({});
+
+        //  FileDB.remove({});
 
       }
 
@@ -571,12 +672,7 @@ var dailyBackup = schedule.scheduleJob('0 0 0 * * *', Meteor.bindEnvironment(fun
 
 
 
-
-
-
-
-
-setTimeout(Meteor.bindEnvironment(main), 10000);
+setTimeout(Meteor.bindEnvironment(main), 1000);
 
 
 function main() {
@@ -584,22 +680,32 @@ function main() {
 
   console.log("Initialising DB")
 
-
   allFilesPulledTable = FileDB.find({}).fetch()
 
   for (var i = 0; i < allFilesPulledTable.length; i++) {
 
-    console.log("Checking file:" + (i + 1) + "/" + allFilesPulledTable.length)
+    // console.log("Checking file:" + (i + 1) + "/" + allFilesPulledTable.length)
     // reset processing status of files onload.
+
+
+
+
+
 
     if (allFilesPulledTable[i].processingStatus !== false) {
 
       var tempObj = {
         processingStatus: false,
       }
-      Meteor.call('modifyFileDB', 'update', allFilesPulledTable[i].file, tempObj, (error, result) => { })
+      Meteor.call('modifyDB', 'FileJSONDB', 'update', allFilesPulledTable[i].file, tempObj, (error, result) => { })
     }
   }
+
+
+
+
+
+
 
 
 
@@ -617,11 +723,11 @@ function main() {
 
   //Set globalDB settings on init
 
-  var count = GlobalSettingsDB.find({}, {}).fetch()
+  var count = GlobalOptionsDB.find({}, {}).fetch()
 
   if (!Array.isArray(count) || !count.length) {
 
-    GlobalSettingsDB.upsert('globalsettings',
+    GlobalOptionsDB.upsert('globalsettings',
       {
         $set: {
           lowCPUPriority: false,
@@ -637,7 +743,7 @@ function main() {
 
     if (count[0].generalWorkerLimit == undefined) {
 
-      GlobalSettingsDB.upsert('globalsettings',
+      GlobalOptionsDB.upsert('globalsettings',
         {
           $set: {
             lowCPUPriority: false,
@@ -679,7 +785,7 @@ function main() {
 
       }
 
-      GlobalSettingsDB.upsert(
+      GlobalOptionsDB.upsert(
         "globalsettings",
         {
           $set: {
@@ -694,7 +800,7 @@ function main() {
 
     if (count[0].tableSize == undefined) {
 
-      GlobalSettingsDB.upsert(
+      GlobalOptionsDB.upsert(
         "globalsettings",
         {
           $set: {
@@ -713,7 +819,7 @@ function main() {
 
     if (count[0].queueSortType == undefined) {
 
-      GlobalSettingsDB.upsert(
+      GlobalOptionsDB.upsert(
         "globalsettings",
         {
           $set: {
@@ -726,7 +832,7 @@ function main() {
 
     if (count[0].prioritiseLibraries == undefined) {
 
-      GlobalSettingsDB.upsert(
+      GlobalOptionsDB.upsert(
         "globalsettings",
         {
           $set: {
@@ -739,7 +845,7 @@ function main() {
 
     if (count[0].alternateLibraries == undefined) {
 
-      GlobalSettingsDB.upsert(
+      GlobalOptionsDB.upsert(
         "globalsettings",
         {
           $set: {
@@ -752,7 +858,7 @@ function main() {
 
     if (count[0].basePath == undefined) {
 
-      GlobalSettingsDB.upsert(
+      GlobalOptionsDB.upsert(
         "globalsettings",
         {
           $set: {
@@ -764,7 +870,7 @@ function main() {
 
   }
 
-  GlobalSettingsDB.upsert('globalsettings',
+  GlobalOptionsDB.upsert('globalsettings',
     {
       $set: {
         logsLoading: false,
@@ -778,7 +884,9 @@ function main() {
 
   //configure libraries
 
-  var count = SettingsDB.find({}, { sort: { createdAt: 1 } }).fetch()
+ // var count = LibraryOptionsDB.find({}, { sort: { createdAt: 1 } }).fetch()
+
+ var count = LibraryOptionsJSONDB.value()
 
   if (Array.isArray(count) || count.length) {
 
@@ -787,14 +895,21 @@ function main() {
 
       for (var i = 0; i < count.length; i++) {
 
-        SettingsDB.upsert(
-          count[i]._id,
-          {
-            $set: {
-              priority: i,
-            }
-          }
-        );
+        // LibraryOptionsDB.upsert(
+        //   count[i]._id,
+        //   {
+        //     $set: {
+        //       priority: i,
+        //     }
+        //   }
+        // );
+
+        var tempObj = {
+          _id: count[i]._id,
+          priority: i,
+        }
+
+        Meteor.call('modifyDB', 'LibraryOptionsJSONDB', 'upsert', count[i]._id, tempObj, (error, result) => { })
 
       }
     }
@@ -947,7 +1062,7 @@ function main() {
         }
 
 
-        GlobalSettingsDB.upsert('globalsettings',
+        GlobalOptionsDB.upsert('globalsettings',
           {
             $set: {
               propertySearchLoading: false,
@@ -961,7 +1076,7 @@ function main() {
 
       } catch (err) {
 
-        GlobalSettingsDB.upsert('globalsettings',
+        GlobalOptionsDB.upsert('globalsettings',
           {
             $set: {
               propertySearchLoading: false,
@@ -1041,7 +1156,7 @@ function main() {
       }
 
 
-      GlobalSettingsDB.upsert('globalsettings',
+      GlobalOptionsDB.upsert('globalsettings',
         {
           $set: {
             pluginSearchLoading: false,
@@ -1127,27 +1242,42 @@ function main() {
 
       if (fs.existsSync(path)) {
 
-        SettingsDB.upsert(
-          DB_id,
-          {
-            $set: {
-              pluginValid: true,
-            }
-          }
-        );
+        // LibraryOptionsDB.upsert(
+        //   DB_id,
+        //   {
+        //     $set: {
+        //       pluginValid: true,
+        //     }
+        //   }
+        // );
+
+
+        var tempObj = {
+          _id: DB_id,
+          pluginValid: true,
+        }
+
+        Meteor.call('modifyDB', 'LibraryOptionsJSONDB', 'upsert', DB_id, tempObj, (error, result) => { })
 
 
       } else {
 
-        SettingsDB.upsert(
+        // LibraryOptionsDB.upsert(
 
-          DB_id,
-          {
-            $set: {
-              pluginValid: false,
-            }
-          }
-        );
+        //   DB_id,
+        //   {
+        //     $set: {
+        //       pluginValid: false,
+        //     }
+        //   }
+        // );
+
+        var tempObj = {
+          _id: DB_id,
+          pluginValid: false,
+        }
+
+        Meteor.call('modifyDB', 'LibraryOptionsJSONDB', 'upsert', DB_id, tempObj, (error, result) => { })
 
       }
 
@@ -1192,7 +1322,7 @@ function main() {
         console.log('Plugin update finished')
 
 
-        GlobalSettingsDB.upsert('globalsettings',
+        GlobalOptionsDB.upsert('globalsettings',
           {
             $set: {
               pluginSearchLoading: false,
@@ -1251,7 +1381,7 @@ function main() {
             //[mode]: 'Queued',
             [mode]: processStatus,
           }
-          Meteor.call('modifyFileDB', 'update', allFiles[i].file, tempObj, (error, result) => { })
+          Meteor.call('modifyDB', 'FileJSONDB', 'update', allFiles[i].file, tempObj, (error, result) => { })
 
 
         } catch (err) { console.log(err.stack) }
@@ -1269,14 +1399,21 @@ function main() {
 
         if (fs.existsSync(folderPath)) {
 
-          SettingsDB.upsert(
-            DB_id,
-            {
-              $set: {
-                [folderType]: true,
-              }
-            }
-          );
+          // LibraryOptionsDB.upsert(
+          //   DB_id,
+          //   {
+          //     $set: {
+          //       [folderType]: true,
+          //     }
+          //   }
+          // );
+
+          var tempObj = {
+            _id : DB_id,
+            [folderType]: true,
+          }
+  
+          Meteor.call('modifyDB', 'LibraryOptionsJSONDB', 'upsert', DB_id, tempObj, (error, result) => { })
 
           try {
             var folders = getDirectories(folderPath)
@@ -1300,15 +1437,22 @@ function main() {
 
         } else {
 
-          SettingsDB.upsert(
+          // LibraryOptionsDB.upsert(
 
-            DB_id,
-            {
-              $set: {
-                [folderType]: false,
-              }
-            }
-          );
+          //   DB_id,
+          //   {
+          //     $set: {
+          //       [folderType]: false,
+          //     }
+          //   }
+          // );
+
+          var tempObj = {
+            _id : DB_id,
+            [folderType]: false,
+          }
+  
+          Meteor.call('modifyDB', 'LibraryOptionsJSONDB', 'upsert', DB_id, tempObj, (error, result) => { })
 
           folderPath2 = folderPath.split('/')
           var idx = folderPath2.length - 1
@@ -1360,12 +1504,13 @@ function main() {
 
     'getLog'() {
 
-      var log = LogDB.find({}).fetch()
+      //var log = LogDB.find({}).fetch()
+      var log = LogJSONDB.value()
       log = log.sort(function (a, b) {
         return new Date(b.createdAt) - new Date(a.createdAt);
       });
 
-      GlobalSettingsDB.upsert('globalsettings',
+      GlobalOptionsDB.upsert('globalsettings',
         {
           $set: {
             logsLoading: false,
@@ -1380,10 +1525,12 @@ function main() {
     },
 
     'clearLogDB'() {
-      LogDB.remove({})
+      //LogDB.remove({})
+
+      Meteor.call('modifyDB', 'LogJSONDB', 'removeAll', (error, result) => { })
 
 
-      GlobalSettingsDB.upsert('globalsettings',
+      GlobalOptionsDB.upsert('globalsettings',
         {
           $set: {
             logsLoading: false,
@@ -1396,12 +1543,18 @@ function main() {
 
     }, 'clearDB'() {
 
-      LogDB.remove({})
-      Meteor.call('modifyFileDB', 'removeAll', (error, result) => { })
-      SettingsDB.remove({})
-      StatisticsDB.remove({})
-      ClientDB.remove({})
-      GlobalSettingsDB.remove({})
+      //LogDB.remove({})
+      Meteor.call('modifyDB', 'LogJSONDB', 'removeAll', (error, result) => { })
+      Meteor.call('modifyDB', 'FileJSONDB', 'removeAll', (error, result) => { })
+      // LibraryOptionsDB.remove({})
+      // StatisticsDB.remove({})
+      // ClientDB.remove({})
+      // GlobalOptionsDB.remove({})
+
+      Meteor.call('modifyDB', 'LibraryOptionsJSONDB', 'removeAll', (error, result) => { })
+      Meteor.call('modifyDB', 'StatisticsJSONDB', 'removeAll', (error, result) => { })
+      Meteor.call('modifyDB', 'ClientJSONDB', 'removeAll', (error, result) => { })
+      Meteor.call('modifyDB', 'GlobalOptionsJSONDB', 'removeAll', (error, result) => { })
 
     },
     'upsertWorkers'(w_id, obj) {
@@ -1502,7 +1655,7 @@ function main() {
                 //delete files in DBs if not exist anymore (cleanse)
                 console.log("File does not exist anymore, removing:" + filesInDB[i].file)
 
-                Meteor.call('modifyFileDB', 'removeOne', filesInDB[i]._id, (error, result) => { })
+                Meteor.call('modifyDB', 'FileJSONDB', 'removeOne', filesInDB[i]._id, (error, result) => { })
 
 
                 filesInDB.splice(i, 1)
@@ -1560,7 +1713,7 @@ function main() {
           updateConsole("Commencing fresh file scan.", false)
 
 
-          Meteor.call('modifyFileDB', 'removeByDB', DB_id, (error, result) => { })
+          Meteor.call('modifyDB', 'FileJSONDB', 'removeByDB', DB_id, (error, result) => { })
 
           //  var filesInDB = []
 
@@ -1596,20 +1749,32 @@ function main() {
 
         if (mode == 0 || mode == 1) {
 
-          SettingsDB.upsert(DB_id,
-            {
-              $set: {
-                scanButtons: false,
-                scanFound: "Files found:" + 0,
-              }
-            }
-          );
+          // LibraryOptionsDB.upsert(DB_id,
+          //   {
+          //     $set: {
+          //       scanButtons: false,
+          //       scanFound: "Files found:" + 0,
+          //     }
+          //   }
+          // );
+
+
+          var tempObj = {
+            _id : DB_id,
+            scanButtons: false,
+            scanFound: "Files found:" + 0,
+          }
+  
+          Meteor.call('modifyDB', 'LibraryOptionsJSONDB', 'upsert', DB_id, tempObj, (error, result) => { })
+
         }
 
 
+      //  var thisItemsLib = LibraryOptionsDB.find({ _id: DB_id }, { sort: { createdAt: 1 } }).fetch()
+
+      var thisItemsLib = LibraryOptionsJSONDB.value().filter(row => row._id == DB_id)
 
 
-        var thisItemsLib = SettingsDB.find({ _id: DB_id }, { sort: { createdAt: 1 } }).fetch()
         var allowedContainers = thisItemsLib[0].containerFilter
         allowedContainers = allowedContainers.split(',');
 
@@ -1706,15 +1871,21 @@ function main() {
 
           if (message[1] == "updateScanFound") {
 
-            SettingsDB.upsert(message[2],
-              {
-                $set: {
-                  scanFound: message[3],
-                }
-              }
-            );
+            // LibraryOptionsDB.upsert(message[2],
+            //   {
+            //     $set: {
+            //       scanFound: message[3],
+            //     }
+            //   }
+            // );
 
-
+            var tempObj = {
+              _id : message[2],
+              scanFound: message[3],
+            }
+    
+            Meteor.call('modifyDB', 'LibraryOptionsJSONDB', 'upsert', message[2], tempObj, (error, result) => { })
+    
           }
 
           if (message[1] == "finishScan") {
@@ -1725,16 +1896,21 @@ function main() {
             runningScans.splice(indexEle, 1)
 
 
+            // LibraryOptionsDB.upsert(message[2],
+            //   {
+            //     $set: {
+            //       scanButtons: true,
+            //     }
+            //   }
+            // );
 
-
-
-            SettingsDB.upsert(message[2],
-              {
-                $set: {
-                  scanButtons: true,
-                }
-              }
-            );
+            var tempObj = {
+              _id : message[2],
+              scanButtons: true,
+            }
+    
+            Meteor.call('modifyDB', 'LibraryOptionsJSONDB', 'upsert', message[2], tempObj, (error, result) => { })
+    
 
 
           }
@@ -1832,7 +2008,7 @@ function main() {
         workerCommand = ffmpegPath + " " + text
       }
 
-      var ffmpegNVENCBinary = (GlobalSettingsDB.find({}, {}).fetch())[0].ffmpegNVENCBinary
+      var ffmpegNVENCBinary = (GlobalOptionsDB.find({}, {}).fetch())[0].ffmpegNVENCBinary
 
       if (ffmpegNVENCBinary == true) {
         if (process.platform == 'linux' && mode == "handbrake") {
@@ -1915,11 +2091,11 @@ function main() {
         workerCommand = ffmpegPath + " " + preset1 + " -i \"" + inputFile + "\" " + preset2 + " \"" + outputFile + "\" "
       }
 
-      if (process.platform == 'linux'){
-        workerCommand = ffmpegPathLinux42 + " " + preset1 + " -i '" + inputFileUnix + "' " + preset2 + " '" + outputFileUnix + "' " 
+      if (process.platform == 'linux') {
+        workerCommand = ffmpegPathLinux42 + " " + preset1 + " -i '" + inputFileUnix + "' " + preset2 + " '" + outputFileUnix + "' "
       }
-      
-      if(process.platform == 'darwin') {
+
+      if (process.platform == 'darwin') {
         workerCommand = ffmpegPathUnix + " " + preset1 + " -i '" + inputFileUnix + "' " + preset2 + " '" + outputFileUnix + "' "
       }
 
@@ -1939,30 +2115,51 @@ function main() {
 
   //initialise GUI properties
 
-  var settingsInit = SettingsDB.find({}, {}).fetch()
+ // var settingsInit = LibraryOptionsDB.find({}, {}).fetch()
+
+ var settingsInit = LibraryOptionsJSONDB.value()
 
   for (var i = 0; i < settingsInit.length; i++) {
 
 
-    SettingsDB.upsert(settingsInit[i]._id,
-      {
-        $set: {
-          scanButtons: true,
-          scanFound: "Files found:" + 0,
-        }
-      }
-    );
+    // LibraryOptionsDB.upsert(settingsInit[i]._id,
+    //   {
+    //     $set: {
+    //       scanButtons: true,
+    //       scanFound: "Files found:" + 0,
+    //     }
+    //   }
+    // );
+
+    var tempObj = {
+      _id : settingsInit[i]._id,
+      scanButtons: true,
+      scanFound: "Files found:" + 0,
+    }
+
+    Meteor.call('modifyDB', 'LibraryOptionsJSONDB', 'upsert', settingsInit[i]._id, tempObj, (error, result) => { })
+
+
 
     //Add folder watch scan interval
 
     if (settingsInit[i].folderWatchScanInterval == undefined) {
-      SettingsDB.upsert(settingsInit[i]._id,
-        {
-          $set: {
-            folderWatchScanInterval: 30,
-          }
-        }
-      );
+
+      // LibraryOptionsDB.upsert(settingsInit[i]._id,
+      //   {
+      //     $set: {
+      //       folderWatchScanInterval: 30,
+      //     }
+      //   }
+      // );
+
+      var tempObj = {
+        _id : settingsInit[i]._id,
+        folderWatchScanInterval: 30,
+      }
+  
+      Meteor.call('modifyDB', 'LibraryOptionsJSONDB', 'upsert', settingsInit[i]._id, tempObj, (error, result) => { })
+
     }
 
 
@@ -1998,7 +2195,9 @@ function main() {
     try {
 
 
-      var settingsInit = SettingsDB.find({}, {}).fetch()
+     // var settingsInit = LibraryOptionsDB.find({}, {}).fetch()
+
+      var settingsInit = LibraryOptionsJSONDB.value()
 
 
       for (var i = 0; i < settingsInit.length; i++) {
@@ -2051,7 +2250,7 @@ function main() {
 
   var shell = require('shelljs');
 
- scheduledPluginUpdate()
+  scheduledPluginUpdate()
 
 
   function scheduledPluginUpdate() {
@@ -2084,7 +2283,9 @@ function main() {
 
     try {
 
-      var settings = SettingsDB.find({}, { sort: { createdAt: 1 } }).fetch()
+   //   var settings = LibraryOptionsDB.find({}, { sort: { createdAt: 1 } }).fetch()
+
+   var settings = LibraryOptionsJSONDB.value()
 
       for (var i = 0; i < settings.length; i++) {
         try {
@@ -2448,7 +2649,7 @@ function main() {
                   processingStatus: true
 
                 }
-                Meteor.call('modifyFileDB', 'update', firstItem.file, tempObj, (error, result) => { })
+                Meteor.call('modifyDB', 'FileJSONDB', 'update', firstItem.file, tempObj, (error, result) => { })
 
 
 
@@ -2474,12 +2675,14 @@ function main() {
 
                 var fileToProcess = firstItem.file
                 var fileID = firstItem._id
-                var settings = SettingsDB.find({ _id: firstItem.DB }, { sort: { createdAt: 1 } }).fetch()
+               // var settings = LibraryOptionsDB.find({ _id: firstItem.DB }, { sort: { createdAt: 1 } }).fetch()
 
-                var ffmpegNVENCBinary = (GlobalSettingsDB.find({}, {}).fetch())[0].ffmpegNVENCBinary
+               var settings = LibraryOptionsJSONDB.value().filter(row => row._id == firstItem.DB)
+
+                var ffmpegNVENCBinary = (GlobalOptionsDB.find({}, {}).fetch())[0].ffmpegNVENCBinary
 
 
-                //Settings from SettingsDB
+                //Settings from LibraryOptionsDB
                 var settingsDBIndex = firstItem.DB
                 var inputFolderStem = (settings[0].folder).replace(/\\/g, "/");
                 var outputFolder = (settings[0].cache).replace(/\\/g, "/");
@@ -2909,7 +3112,7 @@ function main() {
                     bumped: false,
 
                   }
-                  Meteor.call('modifyFileDB', 'update', fileToProcess, tempObj, (error, result) => { })
+                  Meteor.call('modifyDB', 'FileJSONDB', 'update', fileToProcess, tempObj, (error, result) => { })
 
 
 
@@ -3043,7 +3246,7 @@ function main() {
             cliLog: message[5],
             lastHealthCheckDate: new Date()
           }
-          Meteor.call('modifyFileDB', 'update', message[2], tempObj, (error, result) => { })
+          Meteor.call('modifyDB', 'FileJSONDB', 'update', message[2], tempObj, (error, result) => { })
 
 
           StatisticsDB.update("statistics",
@@ -3062,7 +3265,7 @@ function main() {
             cliLog: message[5],
             lastTranscodeDate: new Date()
           }
-          Meteor.call('modifyFileDB', 'update', message[2], tempObj, (error, result) => { })
+          Meteor.call('modifyDB', 'FileJSONDB', 'update', message[2], tempObj, (error, result) => { })
 
 
 
@@ -3094,7 +3297,7 @@ function main() {
             processingStatus: false,
             lastHealthCheckDate: new Date()
           }
-          Meteor.call('modifyFileDB', 'update', message[2], tempObj, (error, result) => { })
+          Meteor.call('modifyDB', 'FileJSONDB', 'update', message[2], tempObj, (error, result) => { })
 
 
           StatisticsDB.update("statistics",
@@ -3103,12 +3306,18 @@ function main() {
             }
           );
 
-          SettingsDB.update(
-            message[3],
-            {
-              $inc: { totalHealthCheckCount: 1 }
-            }
-          );
+          // LibraryOptionsDB.update(
+          //   message[3],
+          //   {
+          //     $inc: { totalHealthCheckCount: 1 }
+          //   }
+          // );
+
+          var num = LibraryOptionsJSONDB.value().filter(row => row._id == message[3])[0].totalHealthCheckCount
+          num++
+          LibraryOptionsJSONDB.updateById('153', { totalHealthCheckCount: num })
+            .write()
+
 
 
 
@@ -3118,7 +3327,7 @@ function main() {
           removeFromProcessing(message[5])
 
 
-          Meteor.call('modifyFileDB', 'removeOne', message[5], (error, result) => { })
+          Meteor.call('modifyDB', 'FileJSONDB', 'removeOne', message[5], (error, result) => { })
 
           newFile = [message[2],]
 
@@ -3135,16 +3344,34 @@ function main() {
             }
           );
 
-          SettingsDB.update(
-            message[3],
-            {
-              $inc: {
-                totalTranscodeCount: 1,
-                sizeDiff: message[7]
-              }
-            }
-          );
+          // LibraryOptionsDB.update(
+          //   message[3],
+          //   {
+          //     $inc: {
+          //       totalTranscodeCount: 1
+          //     }
+          //   }
+          // );
 
+        
+          var num = LibraryOptionsJSONDB.value().filter(row => row._id == message[3])[0].totalTranscodeCount
+          num++
+          LibraryOptionsJSONDB.updateById('153', { totalTranscodeCount: num })
+            .write()
+
+          // LibraryOptionsDB.update(
+          //   message[3],
+          //   {
+          //     $inc: {
+          //       sizeDiff: message[7]
+          //     }
+          //   }
+          // );
+
+          var num = LibraryOptionsJSONDB.value().filter(row => row._id == message[3])[0].sizeDiff
+          num+=message[7]
+          LibraryOptionsJSONDB.updateById('153', { sizeDiff: num })
+            .write()
 
         }
 
@@ -3266,7 +3493,7 @@ function main() {
             cliLog: "Item was cancelled by user.",
             lastHealthCheckDate: new Date(),
           }
-          Meteor.call('modifyFileDB', 'update', message[2], tempObj, (error, result) => { })
+          Meteor.call('modifyDB', 'FileJSONDB', 'update', message[2], tempObj, (error, result) => { })
 
 
         } else if (message[4] == "transcode") {
@@ -3278,7 +3505,7 @@ function main() {
             cliLog: "Item was cancelled by user.",
             lastTranscodeDate: new Date(),
           }
-          Meteor.call('modifyFileDB', 'update', message[2], tempObj, (error, result) => { })
+          Meteor.call('modifyDB', 'FileJSONDB', 'update', message[2], tempObj, (error, result) => { })
 
         }
 
@@ -3381,7 +3608,9 @@ function main() {
 
 
 
-  var settings = SettingsDB.find({}, { sort: { createdAt: 1 } }).fetch()
+ // var settings = LibraryOptionsDB.find({}, { sort: { createdAt: 1 } }).fetch()
+
+ var settings = LibraryOptionsJSONDB.value()
 
   for (var i = 0; i < settings.length; i++) {
 
@@ -3481,7 +3710,10 @@ function main() {
     var watcherID = DB_id
 
 
-    var folderWatchScanInterval = SettingsDB.find({ _id: DB_id }, { sort: { createdAt: 1 } }).fetch()[0].folderWatchScanInterval
+    //var folderWatchScanInterval = LibraryOptionsDB.find({ _id: DB_id }, { sort: { createdAt: 1 } }).fetch()[0].folderWatchScanInterval
+    
+    var folderWatchScanInterval = LibraryOptionsJSONDB.value().filter(row => row._id == DB_id)[0].folderWatchScanInterval
+    
     console.log(folderWatchScanInterval)
 
     var watcherPath = "assets/app/folderWatcher.js"
@@ -3537,7 +3769,7 @@ function main() {
 
       if (message[1] == "removeThisFileFromDB") {
 
-        Meteor.call('modifyFileDB', 'removeOne', message[2], (error, result) => { })
+        Meteor.call('modifyDB', 'FileJSONDB', 'removeOne', message[2], (error, result) => { })
 
       }
 
@@ -3600,7 +3832,7 @@ function main() {
             updateConsole(`Adding file to DB: ${filesToAddToDB[i]._id}`, true)
 
             var tempObj = filesToAddToDB[i]
-            Meteor.call('modifyFileDB', 'insert', filesToAddToDB[i]._id, tempObj, (error, result) => { })
+            Meteor.call('modifyDB', 'FileJSONDB', 'insert', filesToAddToDB[i]._id, tempObj, (error, result) => { })
 
 
 
@@ -3632,14 +3864,14 @@ function main() {
 
             //  updateConsole(`Adding log to DB: ${logsToAddToDB[i].text}`,true)
 
-            LogDB.upsert(logsToAddToDB[i]._id,
-              {
-                $set: logsToAddToDB[i]
-              }
+            // LogDB.upsert(logsToAddToDB[i]._id,
+            //   {
+            //     $set: logsToAddToDB[i]
+            //   }
 
-            );
+            // );
 
-
+            Meteor.call('modifyDB', 'LogJSONDB', 'insert', logsToAddToDB[i]._id, logsToAddToDB[i], (error, result) => { })
 
           } catch (err) {
             console.log(err.stack)
@@ -3711,7 +3943,8 @@ function main() {
 
         addFilesToDB = false
 
-        allFilesPulledTable = FileDB.find({}).fetch()
+        //allFilesPulledTable = FileDB.find({}).fetch()
+        allFilesPulledTable = FileJSONDB.value()
 
 
         var startDate = new Date();
@@ -3719,7 +3952,7 @@ function main() {
 
 
         //sort queues based on user preference
-        var globalSettings = GlobalSettingsDB.find({}, {}).fetch()
+        var globalSettings = GlobalOptionsDB.find({}, {}).fetch()
 
 
         //Sort by date scanned (date createdAt in Tdarr db)
@@ -3806,7 +4039,11 @@ function main() {
 
 
 
-        var settings = SettingsDB.find({}, { sort: { priority: 1 } }).fetch()
+       // var settings = LibraryOptionsDB.find({}, { sort: { priority: 1 } }).fetch()
+
+       var settings = LibraryOptionsJSONDB.value().sort(function (a, b) {
+        return new Date(a.priority) - new Date(b.priority);
+      });
 
         var tableSize = globalSettings[0].tableSize
 
@@ -4173,7 +4410,11 @@ function main() {
 
 
     //Create pies for each library
-    var settings = SettingsDB.find({}, { sort: { priority: 1 } }).fetch()
+  //  var settings = LibraryOptionsDB.find({}, { sort: { priority: 1 } }).fetch()
+
+    var settings = LibraryOptionsJSONDB.value().sort(function (a, b) {
+      return new Date(a.priority) - new Date(b.priority);
+    });
 
 
 
@@ -4300,7 +4541,7 @@ function main() {
       var shell = require('shelljs');
 
 
-      var globalSettings = GlobalSettingsDB.find({}, {}).fetch()
+      var globalSettings = GlobalOptionsDB.find({}, {}).fetch()
 
       //console.log(globalSettings)
 
@@ -4341,7 +4582,7 @@ function main() {
       var healthcheckWorkers = workerDB.filter(row => row.mode == "healthcheck")
 
 
-      var globs = GlobalSettingsDB.find({}, {}).fetch()
+      var globs = GlobalOptionsDB.find({}, {}).fetch()
 
       var gDiff = globs[0].generalWorkerLimit - generalWorkers.length
       var tDiff = globs[0].transcodeWorkerLimit - transcodeWorkers.length
@@ -4412,7 +4653,7 @@ function main() {
 
 
 
-      var workerStallDetector = (GlobalSettingsDB.find({}, {}).fetch())[0].workerStallDetector
+      var workerStallDetector = (GlobalOptionsDB.find({}, {}).fetch())[0].workerStallDetector
 
       if (workerStallDetector === true) {
 
@@ -4473,50 +4714,50 @@ function main() {
     }
   }
 
-  var initialising = true;
+ // var initialising = true;
 
-  SettingsDB.find().observe({
-    added: function (document) {
-      if (!initialising) {
-        //console.log('doc added');
-        Meteor.call('FilesDBHasChanged', (error, result) => { })
-      }
-    },
-    changed: function (new_document, old_document) {
-      if (!initialising) {
-        //console.log('doc changed');
-        Meteor.call('FilesDBHasChanged', (error, result) => { })
-      }
-    },
-    removed: function (document) {
-      if (!initialising) {
-        //console.log('doc removed');
-        Meteor.call('FilesDBHasChanged', (error, result) => { })
-      }
-    }
-  });
+  // LibraryOptionsDB.find().observe({
+  //   added: function (document) {
+  //     if (!initialising) {
+  //       //console.log('doc added');
+  //       Meteor.call('FilesDBHasChanged', (error, result) => { })
+  //     }
+  //   },
+  //   changed: function (new_document, old_document) {
+  //     if (!initialising) {
+  //       //console.log('doc changed');
+  //       Meteor.call('FilesDBHasChanged', (error, result) => { })
+  //     }
+  //   },
+  //   removed: function (document) {
+  //     if (!initialising) {
+  //       //console.log('doc removed');
+  //       Meteor.call('FilesDBHasChanged', (error, result) => { })
+  //     }
+  //   }
+  // });
 
-  GlobalSettingsDB.find().observe({
-    added: function (document) {
-      if (!initialising) {
-        //console.log('doc added');
-        Meteor.call('FilesDBHasChanged', (error, result) => { })
-      }
-    },
-    changed: function (new_document, old_document) {
-      if (!initialising) {
-        //console.log('doc changed');
-        Meteor.call('FilesDBHasChanged', (error, result) => { })
-      }
-    },
-    removed: function (document) {
-      if (!initialising) {
-        //console.log('doc removed');
-        Meteor.call('FilesDBHasChanged', (error, result) => { })
-      }
-    }
-  });
-  initialising = false;
+  // GlobalOptionsDB.find().observe({
+  //   added: function (document) {
+  //     if (!initialising) {
+  //       //console.log('doc added');
+  //       Meteor.call('FilesDBHasChanged', (error, result) => { })
+  //     }
+  //   },
+  //   changed: function (new_document, old_document) {
+  //     if (!initialising) {
+  //       //console.log('doc changed');
+  //       Meteor.call('FilesDBHasChanged', (error, result) => { })
+  //     }
+  //   },
+  //   removed: function (document) {
+  //     if (!initialising) {
+  //       //console.log('doc removed');
+  //       Meteor.call('FilesDBHasChanged', (error, result) => { })
+  //     }
+  //   }
+  // });
+  // initialising = false;
 
 
 

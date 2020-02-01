@@ -4,7 +4,7 @@ import ReactDOM from 'react-dom';
 import { render } from 'react-dom';
 
 
-import { SettingsDB ,GlobalSettingsDB} from '../../api/tasks.js';
+import { LibraryOptionsDB ,GlobalOptionsDB} from '../../api/tasks.js';
 
 import Folder from './tab_Libraries_Folder.jsx';
 import ClipLoader from 'react-spinners/ClipLoader';
@@ -38,7 +38,7 @@ class App extends Component {
     if (confirm('Are you sure you want to delete all libraries?')) {
       Meteor.call('remove', function (error, result) { });
 
-      GlobalSettingsDB.upsert('globalsettings',
+      GlobalOptionsDB.upsert('globalsettings',
         {
           $set: {
             selectedLibrary: 0,
@@ -57,7 +57,7 @@ class App extends Component {
     var count = this.props.libraries.length
 
 
-    SettingsDB.insert({
+    LibraryOptionsDB.insert({
       name:"Library Name",
       priority:count,
       folder:"",
@@ -647,7 +647,7 @@ class App extends Component {
       ]
     });
 
-    GlobalSettingsDB.upsert('globalsettings',
+    GlobalOptionsDB.upsert('globalsettings',
     {
       $set: {
         selectedLibrary: count,
@@ -672,10 +672,10 @@ class App extends Component {
   /></center>, document.getElementById('status'));
 
 
-    Meteor.subscribe('SettingsDB', function(){
+    Meteor.subscribe('LibraryOptionsDB', function(){
 
 
-      var res = SettingsDB.find({}).fetch()
+      var res = LibraryOptionsDB.find({}).fetch()
 
       if(res.length == 0){
   
@@ -693,10 +693,10 @@ class App extends Component {
 
    //
 
-   Meteor.subscribe('SettingsDB', function(){
+   Meteor.subscribe('LibraryOptionsDB', function(){
 
 
-    var res = SettingsDB.find({}).fetch()
+    var res = LibraryOptionsDB.find({}).fetch()
 
     if(res.length == 0){
 
@@ -758,7 +758,7 @@ class App extends Component {
         
     return  <div className="tabWrap" > <Tabs selectedIndex={ this.props.globalSettings[0].selectedLibrary != undefined ? this.props.globalSettings[0].selectedLibrary : 0} onSelect={tabIndex => {
 
-      GlobalSettingsDB.upsert('globalsettings',
+      GlobalOptionsDB.upsert('globalsettings',
       {
         $set: {
           selectedLibrary: tabIndex,
@@ -904,15 +904,15 @@ class App extends Component {
 }
 
  export default withTracker(() => {
-  Meteor.subscribe('GlobalSettingsDB');
-  Meteor.subscribe('SettingsDB');
+  Meteor.subscribe('GlobalOptionsDB');
+  Meteor.subscribe('LibraryOptionsDB');
   
   
   return {
       
     
-    globalSettings: GlobalSettingsDB.find({}, {}).fetch(),
-    libraries: SettingsDB.find({}, { sort: { priority: 1 } }).fetch(),
+    globalSettings: GlobalOptionsDB.find({}, {}).fetch(),
+    libraries: LibraryOptionsDB.find({}, { sort: { priority: 1 } }).fetch(),
 
 
   };

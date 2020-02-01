@@ -59,7 +59,7 @@ export default class App extends Component {
             this.triggerLoadState();
 
 
-            Meteor.call('modifyFileDB','update',this.props.file,this.props.obj, (error, result) => {})
+            Meteor.call('modifyDB','FileJSONDB','update',this.props.file,this.props.obj, (error, result) => {})
 
           }}><span className="buttonTextSize">{this.props.symbol}</span></Button>}
 
@@ -124,7 +124,7 @@ export default class App extends Component {
 
             this.triggerLoadState();
 
-            Meteor.call('modifyFileDB','removeOne',this.props.file._id, (error, result) => {})
+            Meteor.call('modifyDB','FileJSONDB','removeOne',this.props.file._id, (error, result) => {})
            
 
           }}><span className="buttonTextSize">{this.props.symbol}</span></Button>}

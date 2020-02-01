@@ -8,7 +8,7 @@ import Checkbox from '@material-ui/core/Checkbox';
 import { renderToString } from 'react-dom/server'
 import { Markup } from 'interweave';
 
-import { GlobalSettingsDB } from '../api/tasks.js';
+import { GlobalOptionsDB } from '../api/tasks.js';
 import { withTracker } from 'meteor/react-meteor-data';
 
 import JSONPretty from 'react-json-pretty';
@@ -740,7 +740,7 @@ renderBumpButton(file) {
 
 
 
-    GlobalSettingsDB.upsert(
+    GlobalOptionsDB.upsert(
 
       "globalsettings",
       {
@@ -771,12 +771,12 @@ render() {
 
 export default withTracker(() => {
 
-  Meteor.subscribe('GlobalSettingsDB');
+  Meteor.subscribe('GlobalOptionsDB');
 
 
   return {
 
-    globalSettings: GlobalSettingsDB.find({}, {}).fetch(),
+    globalSettings: GlobalOptionsDB.find({}, {}).fetch(),
 
   };
 })(App);

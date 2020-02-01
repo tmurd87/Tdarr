@@ -12,7 +12,7 @@ import { render } from 'react-dom';
 import ClipLoader from 'react-spinners/ClipLoader';
 
 
-import { GlobalSettingsDB } from '../api/tasks.js';
+import { GlobalOptionsDB } from '../api/tasks.js';
 
 import {
     LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Label, Brush
@@ -45,7 +45,7 @@ class App extends Component {
 
         if (confirm('Are you sure you want to delete the logs?')) {
 
-            GlobalSettingsDB.upsert('globalsettings',
+            GlobalOptionsDB.upsert('globalsettings',
             {
                 $set: {
                     logsLoading: true,
@@ -65,7 +65,7 @@ class App extends Component {
 
     renderRaw() {
 
-        GlobalSettingsDB.upsert('globalsettings',
+        GlobalOptionsDB.upsert('globalsettings',
             {
                 $set: {
                     logsLoading: true,
@@ -101,7 +101,7 @@ class App extends Component {
 
     renderLogDB() {
 
-        GlobalSettingsDB.upsert('globalsettings',
+        GlobalOptionsDB.upsert('globalsettings',
             {
                 $set: {
                     logsLoading: true,
@@ -349,7 +349,7 @@ try{
             trackStyle={borderRadiusStyle}
              value={item.verboseLogs}  style={ButtonStyle} onToggle={() => {
 
-                GlobalSettingsDB.upsert('globalsettings',
+                GlobalOptionsDB.upsert('globalsettings',
                     {
                         $set: {
                             verboseLogs: !item.verboseLogs,
@@ -456,12 +456,12 @@ try{
 
 export default withTracker(() => {
 
-    Meteor.subscribe('GlobalSettingsDB');
+    Meteor.subscribe('GlobalOptionsDB');
 
 
     return {
 
-        globalSettings: GlobalSettingsDB.find({}, {}).fetch(),
+        globalSettings: GlobalOptionsDB.find({}, {}).fetch(),
 
     };
 })(App);

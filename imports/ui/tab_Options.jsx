@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { withTracker } from 'meteor/react-meteor-data';
-import { GlobalSettingsDB } from '../api/tasks.js';
+import { GlobalOptionsDB } from '../api/tasks.js';
 import ClipLoader from 'react-spinners/ClipLoader';
 import ToggleButton from 'react-toggle-button';
 
@@ -33,7 +33,7 @@ class App extends Component {
       }
 
 
-      GlobalSettingsDB.upsert(
+      GlobalOptionsDB.upsert(
 
         "globalsettings",
         {
@@ -89,7 +89,7 @@ class App extends Component {
             trackStyle={borderRadiusStyle}
             value={settings.ffmpegNVENCBinary} onToggle={() => {
 
-              GlobalSettingsDB.upsert('globalsettings',
+              GlobalOptionsDB.upsert('globalsettings',
                 {
                   $set: {
                     ffmpegNVENCBinary: !settings.ffmpegNVENCBinary,
@@ -113,7 +113,7 @@ class App extends Component {
             trackStyle={borderRadiusStyle}
             value={settings.workerStallDetector} onToggle={() => {
 
-              GlobalSettingsDB.upsert('globalsettings',
+              GlobalOptionsDB.upsert('globalsettings',
                 {
                   $set: {
                     workerStallDetector: !settings.workerStallDetector,
@@ -177,11 +177,11 @@ class App extends Component {
 
 export default withTracker(() => {
 
-  Meteor.subscribe('GlobalSettingsDB');
+  Meteor.subscribe('GlobalOptionsDB');
 
 
   return {
-    globalSettings: GlobalSettingsDB.find({}, {}).fetch(),
+    globalSettings: GlobalOptionsDB.find({}, {}).fetch(),
 
   };
 })(App);

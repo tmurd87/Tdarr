@@ -8,7 +8,7 @@ import ReactDOM, {render} from 'react-dom';
 import InputRange from 'react-input-range';
 import ToggleButton from 'react-toggle-button';
 
-import {GlobalSettingsDB, SettingsDB, StatisticsDB} from '../../api/tasks.js';
+import {GlobalOptionsDB, LibraryOptionsDB, StatisticsDB} from '../../api/tasks.js';
 import AudioCodec from './AudioCodec.jsx';
 import Plugin from './Plugin.jsx';
 import ScheduleBlock from './ScheduleBlock.jsx';
@@ -94,7 +94,7 @@ class Folder extends Component {
                 temp.splice(idx, 1);
                 temp = temp.join('/');
 
-                SettingsDB.upsert(this.props.libraryItem._id, {
+                LibraryOptionsDB.upsert(this.props.libraryItem._id, {
                   $set: {
                     [type]: temp,
                   },
@@ -122,7 +122,7 @@ class Folder extends Component {
                   <Button
                     variant="outline-light"
                     onClick={() => {
-                      SettingsDB.upsert(this.props.libraryItem._id, {
+                      LibraryOptionsDB.upsert(this.props.libraryItem._id, {
                         $set: {
                           [type]: row.fullPath.replace(/\\/g, '/'),
                         },
@@ -159,7 +159,7 @@ class Folder extends Component {
                   temp.splice(idx, 1);
                   temp = temp.join('/');
 
-                  SettingsDB.upsert(this.props.libraryItem._id, {
+                  LibraryOptionsDB.upsert(this.props.libraryItem._id, {
                     $set: {
                       [type]: temp,
                     },
@@ -193,7 +193,7 @@ class Folder extends Component {
 
     //turn off folder watcher if folder name change detected
     if (name == 'folder') {
-      SettingsDB.upsert(this.props.libraryItem._id, {
+      LibraryOptionsDB.upsert(this.props.libraryItem._id, {
         $set: {
           folderWatching: false,
         },
@@ -217,7 +217,7 @@ class Folder extends Component {
       Meteor.call('verifyPlugin', value, _id, pluginCommunity);
     }
 
-    SettingsDB.upsert(_id, {
+    LibraryOptionsDB.upsert(_id, {
       $set: {
         [name]: value,
       },
@@ -228,14 +228,14 @@ class Folder extends Component {
     const {name, checked} = event.target;
     const {_id} = this.props.libraryItem;
 
-    SettingsDB.upsert(_id, {
+    LibraryOptionsDB.upsert(_id, {
       $set: {
         [name]: checked,
       },
     });
 
     if (name == 'handbrake' && checked == true) {
-      SettingsDB.upsert(_id, {
+      LibraryOptionsDB.upsert(_id, {
         $set: {
           ffmpeg: false,
         },
@@ -243,7 +243,7 @@ class Folder extends Component {
     }
 
     if (name == 'ffmpeg' && checked == true) {
-      SettingsDB.upsert(_id, {
+      LibraryOptionsDB.upsert(_id, {
         $set: {
           handbrake: false,
         },
@@ -251,7 +251,7 @@ class Folder extends Component {
     }
 
     if (name == 'handbrakescan' && checked == true) {
-      SettingsDB.upsert(_id, {
+      LibraryOptionsDB.upsert(_id, {
         $set: {
           ffmpegscan: false,
         },
@@ -259,7 +259,7 @@ class Folder extends Component {
     }
 
     if (name == 'ffmpegscan' && checked == true) {
-      SettingsDB.upsert(_id, {
+      LibraryOptionsDB.upsert(_id, {
         $set: {
           handbrakescan: false,
         },
@@ -267,7 +267,7 @@ class Folder extends Component {
     }
 
     if (name == 'community' && checked == true) {
-      SettingsDB.upsert(_id, {
+      LibraryOptionsDB.upsert(_id, {
         $set: {
           pluginCommunity: true,
         },
@@ -275,7 +275,7 @@ class Folder extends Component {
     }
 
     if (name == 'local' && checked == true) {
-      SettingsDB.upsert(_id, {
+      LibraryOptionsDB.upsert(_id, {
         $set: {
           pluginCommunity: false,
         },
@@ -287,7 +287,7 @@ class Folder extends Component {
     console.log(event.target.checked, type, event.target.name);
     const key = 'decisionMaker.' + type + 'ExcludeSwitch';
     if (event.target.name == 'ExcludeSwitch' && event.target.checked == true) {
-      SettingsDB.upsert(this.props.libraryItem._id, {
+      LibraryOptionsDB.upsert(this.props.libraryItem._id, {
         $set: {
           [key]: true,
         },
@@ -296,7 +296,7 @@ class Folder extends Component {
       event.target.name == 'IncludeSwitch' &&
       event.target.checked == true
     ) {
-      SettingsDB.upsert(this.props.libraryItem._id, {
+      LibraryOptionsDB.upsert(this.props.libraryItem._id, {
         $set: {
           [key]: false,
         },
@@ -454,7 +454,7 @@ class Folder extends Component {
 
     //UpdateMigration
     if (blocks.length < 168) {
-      SettingsDB.upsert(this.props.libraryItem._id, {
+      LibraryOptionsDB.upsert(this.props.libraryItem._id, {
         $set: {
           schedule,
         },
@@ -538,7 +538,7 @@ class Folder extends Component {
   }
 
   showHideSettings() {
-    SettingsDB.upsert(this.props.libraryItem._id, {
+    LibraryOptionsDB.upsert(this.props.libraryItem._id, {
       $set: {
         expanded: !this.props.libraryItem.expanded,
       },
@@ -564,7 +564,7 @@ class Folder extends Component {
   };
 
   scanFilesRun = mode => {
-    SettingsDB.upsert(this.props.libraryItem._id, {
+    LibraryOptionsDB.upsert(this.props.libraryItem._id, {
       $set: {
         scanButtons: false,
       },
@@ -599,7 +599,7 @@ class Folder extends Component {
 
     const text = ReactDOM.findDOMNode(this.refs.addPluginText).value.trim();
 
-    var thisLibraryPlugins = SettingsDB.find(
+    var thisLibraryPlugins = LibraryOptionsDB.find(
       {_id: this.props.libraryItem._id},
       {sort: {createdAt: 1}}
     ).fetch()[0].pluginIDs;
@@ -661,7 +661,7 @@ class Folder extends Component {
 
       for (var i = 0; i < libraries.length; i++) {
         if (libraries[i].priority > this.props.libraryItem.priority) {
-          SettingsDB.upsert(libraries[i]._id, {
+          LibraryOptionsDB.upsert(libraries[i]._id, {
             $set: {
               priority: libraries[i].priority - 1,
             },
@@ -673,14 +673,14 @@ class Folder extends Component {
         this.props.libraryItem.priority == libraries.length - 1 &&
         this.props.libraryItem.priority !== 0
       ) {
-        GlobalSettingsDB.upsert('globalsettings', {
+        GlobalOptionsDB.upsert('globalsettings', {
           $set: {
             selectedLibrary: this.props.libraryItem.priority - 1,
           },
         });
       }
 
-      SettingsDB.remove(this.props.libraryItem._id);
+      LibraryOptionsDB.remove(this.props.libraryItem._id);
 
       Meteor.call('removelibrary', this.props.libraryItem._id);
 
@@ -762,7 +762,7 @@ class Folder extends Component {
                         "Are you sure you want to reset this library's stats?"
                       )
                     ) {
-                      SettingsDB.upsert(this.props.libraryItem._id, {
+                      LibraryOptionsDB.upsert(this.props.libraryItem._id, {
                         $set: {
                           totalTranscodeCount: 0,
                           sizeDiff: 0,
@@ -778,14 +778,14 @@ class Folder extends Component {
 
 <Dropdown.Item style={{ color: 'white', fontSize: '14px' }} onClick={() => {
 
-var priority = SettingsDB.find({}, { sort: { createdAt: 1 } }).fetch().length
-var thisLibrary = (SettingsDB.find({ _id: this.props.libraryItem._id }, { sort: { createdAt: 1 } }).fetch())[0]
+var priority = LibraryOptionsDB.find({}, { sort: { createdAt: 1 } }).fetch().length
+var thisLibrary = (LibraryOptionsDB.find({ _id: this.props.libraryItem._id }, { sort: { createdAt: 1 } }).fetch())[0]
 
 thisLibrary.name = thisLibrary.name +" (Duplicate)"
 thisLibrary.priority = priority
 
 delete thisLibrary._id;
-SettingsDB.insert(thisLibrary)
+LibraryOptionsDB.insert(thisLibrary)
 
 
 }
@@ -823,19 +823,19 @@ SettingsDB.insert(thisLibrary)
                 if (this.props.libraryItem.priority == 0) {
                   // no-op
                 } else {
-                  GlobalSettingsDB.upsert('globalsettings', {
+                  GlobalOptionsDB.upsert('globalsettings', {
                     $set: {
                       selectedLibrary: this.props.libraryItem.priority - 1,
                     },
                   });
 
-                  SettingsDB.upsert(this.props.libraryItem._id, {
+                  LibraryOptionsDB.upsert(this.props.libraryItem._id, {
                     $set: {
                       priority: this.props.libraryItem.priority - 1,
                     },
                   });
 
-                  SettingsDB.upsert(
+                  LibraryOptionsDB.upsert(
                     libraries[this.props.libraryItem.priority - 1]._id,
                     {
                       $set: {
@@ -859,19 +859,19 @@ SettingsDB.insert(thisLibrary)
                 if (this.props.libraryItem.priority == libraries.length - 1) {
                   // no-op
                 } else {
-                  GlobalSettingsDB.upsert('globalsettings', {
+                  GlobalOptionsDB.upsert('globalsettings', {
                     $set: {
                       selectedLibrary: this.props.libraryItem.priority + 1,
                     },
                   });
 
-                  SettingsDB.upsert(this.props.libraryItem._id, {
+                  LibraryOptionsDB.upsert(this.props.libraryItem._id, {
                     $set: {
                       priority: this.props.libraryItem.priority + 1,
                     },
                   });
 
-                  SettingsDB.upsert(
+                  LibraryOptionsDB.upsert(
                     libraries[this.props.libraryItem.priority + 1]._id,
                     {
                       $set: {
@@ -914,7 +914,7 @@ SettingsDB.insert(thisLibrary)
           <div className="libraryGrid-itemLeft">
             <p
               onClick={() => {
-                SettingsDB.upsert(this.props.libraryItem._id, {
+                LibraryOptionsDB.upsert(this.props.libraryItem._id, {
                   $set: {
                     navItemSelected: 'navSourceFolder',
                   },
@@ -931,7 +931,7 @@ SettingsDB.insert(thisLibrary)
             </p>
             <p
               onClick={() => {
-                SettingsDB.upsert(this.props.libraryItem._id, {
+                LibraryOptionsDB.upsert(this.props.libraryItem._id, {
                   $set: {
                     navItemSelected: 'navCacheFolder',
                   },
@@ -948,7 +948,7 @@ SettingsDB.insert(thisLibrary)
             </p>
             <p
               onClick={() => {
-                SettingsDB.upsert(this.props.libraryItem._id, {
+                LibraryOptionsDB.upsert(this.props.libraryItem._id, {
                   $set: {
                     navItemSelected: 'navOutputFolder',
                   },
@@ -965,7 +965,7 @@ SettingsDB.insert(thisLibrary)
             </p>
             <p
               onClick={() => {
-                SettingsDB.upsert(this.props.libraryItem._id, {
+                LibraryOptionsDB.upsert(this.props.libraryItem._id, {
                   $set: {
                     navItemSelected: 'navContainers',
                   },
@@ -982,7 +982,7 @@ SettingsDB.insert(thisLibrary)
             </p>
             <p
               onClick={() => {
-                SettingsDB.upsert(this.props.libraryItem._id, {
+                LibraryOptionsDB.upsert(this.props.libraryItem._id, {
                   $set: {
                     navItemSelected: 'navTranscode',
                   },
@@ -999,7 +999,7 @@ SettingsDB.insert(thisLibrary)
             </p>
             <p
               onClick={() => {
-                SettingsDB.upsert(this.props.libraryItem._id, {
+                LibraryOptionsDB.upsert(this.props.libraryItem._id, {
                   $set: {
                     navItemSelected: 'navHealthCheck',
                   },
@@ -1016,7 +1016,7 @@ SettingsDB.insert(thisLibrary)
             </p>
             <p
               onClick={() => {
-                SettingsDB.upsert(this.props.libraryItem._id, {
+                LibraryOptionsDB.upsert(this.props.libraryItem._id, {
                   $set: {
                     navItemSelected: 'navSchedule',
                   },
@@ -1054,7 +1054,7 @@ SettingsDB.insert(thisLibrary)
                       name="folderWatching"
                       value={!!this.props.libraryItem.folderWatching || false}
                       onToggle={() => {
-                        SettingsDB.upsert(this.props.libraryItem._id, {
+                        LibraryOptionsDB.upsert(this.props.libraryItem._id, {
                           $set: {
                             folderWatching: !this.props.libraryItem
                               .folderWatching,
@@ -1084,7 +1084,7 @@ SettingsDB.insert(thisLibrary)
                           : !!this.props.libraryItem.processLibrary
                       }
                       onToggle={() => {
-                        SettingsDB.upsert(this.props.libraryItem._id, {
+                        LibraryOptionsDB.upsert(this.props.libraryItem._id, {
                           $set: {
                             processLibrary: !this.props.libraryItem
                               .processLibrary,
@@ -1107,7 +1107,7 @@ SettingsDB.insert(thisLibrary)
                           : !!this.props.libraryItem.scanOnStart
                       }
                       onToggle={() => {
-                        SettingsDB.upsert(this.props.libraryItem._id, {
+                        LibraryOptionsDB.upsert(this.props.libraryItem._id, {
                           $set: {
                             scanOnStart: !this.props.libraryItem.scanOnStart,
                           },
@@ -1131,7 +1131,7 @@ SettingsDB.insert(thisLibrary)
                           : !!this.props.libraryItem.closedCaptionScan
                       }
                       onToggle={() => {
-                        SettingsDB.upsert(this.props.libraryItem._id, {
+                        LibraryOptionsDB.upsert(this.props.libraryItem._id, {
                           $set: {
                             closedCaptionScan: !this.props.libraryItem
                               .closedCaptionScan,
@@ -1306,7 +1306,7 @@ SettingsDB.insert(thisLibrary)
                       : !!this.props.libraryItem.folderToFolderConversion
                   }
                   onToggle={() => {
-                    SettingsDB.upsert(this.props.libraryItem._id, {
+                    LibraryOptionsDB.upsert(this.props.libraryItem._id, {
                       $set: {
                         folderToFolderConversion: !this.props.libraryItem
                           .folderToFolderConversion,
@@ -1331,7 +1331,7 @@ SettingsDB.insert(thisLibrary)
                       : !!this.props.libraryItem.copyIfConditionsMet
                   }
                   onToggle={() => {
-                    SettingsDB.upsert(this.props.libraryItem._id, {
+                    LibraryOptionsDB.upsert(this.props.libraryItem._id, {
                       $set: {
                         copyIfConditionsMet: !this.props.libraryItem
                           .copyIfConditionsMet,
@@ -1355,7 +1355,7 @@ SettingsDB.insert(thisLibrary)
                       : !!this.props.libraryItem.folderToFolderConversionDeleteSource
                   }
                   onToggle={() => {
-                    SettingsDB.upsert(this.props.libraryItem._id, {
+                    LibraryOptionsDB.upsert(this.props.libraryItem._id, {
                       $set: {
                         folderToFolderConversionDeleteSource: !this.props.libraryItem
                           .folderToFolderConversionDeleteSource,
@@ -1452,7 +1452,7 @@ SettingsDB.insert(thisLibrary)
                         !this.props.libraryItem.decisionMaker.pluginFilter ==
                         true
                       ) {
-                        SettingsDB.upsert(this.props.libraryItem._id, {
+                        LibraryOptionsDB.upsert(this.props.libraryItem._id, {
                           $set: {
                             'decisionMaker.pluginFilter': !this.props
                               .libraryItem.decisionMaker.pluginFilter,
@@ -1463,7 +1463,7 @@ SettingsDB.insert(thisLibrary)
                           },
                         });
                       } else {
-                        SettingsDB.upsert(this.props.libraryItem._id, {
+                        LibraryOptionsDB.upsert(this.props.libraryItem._id, {
                           $set: {
                             'decisionMaker.pluginFilter': !this.props
                               .libraryItem.decisionMaker.pluginFilter,
@@ -1488,7 +1488,7 @@ SettingsDB.insert(thisLibrary)
                         !this.props.libraryItem.decisionMaker.videoFilter ==
                         true
                       ) {
-                        SettingsDB.upsert(this.props.libraryItem._id, {
+                        LibraryOptionsDB.upsert(this.props.libraryItem._id, {
                           $set: {
                             'decisionMaker.videoFilter': !this.props.libraryItem
                               .decisionMaker.videoFilter,
@@ -1499,7 +1499,7 @@ SettingsDB.insert(thisLibrary)
                           },
                         });
                       } else {
-                        SettingsDB.upsert(this.props.libraryItem._id, {
+                        LibraryOptionsDB.upsert(this.props.libraryItem._id, {
                           $set: {
                             'decisionMaker.videoFilter': !this.props.libraryItem
                               .decisionMaker.videoFilter,
@@ -1525,7 +1525,7 @@ SettingsDB.insert(thisLibrary)
                         !this.props.libraryItem.decisionMaker.audioFilter ==
                         true
                       ) {
-                        SettingsDB.upsert(this.props.libraryItem._id, {
+                        LibraryOptionsDB.upsert(this.props.libraryItem._id, {
                           $set: {
                             'decisionMaker.audioFilter': !this.props.libraryItem
                               .decisionMaker.audioFilter,
@@ -1536,7 +1536,7 @@ SettingsDB.insert(thisLibrary)
                           },
                         });
                       } else {
-                        SettingsDB.upsert(this.props.libraryItem._id, {
+                        LibraryOptionsDB.upsert(this.props.libraryItem._id, {
                           $set: {
                             'decisionMaker.audioFilter': !this.props.libraryItem
                               .decisionMaker.audioFilter,
@@ -1754,7 +1754,7 @@ SettingsDB.insert(thisLibrary)
                       .video_size_range_include
                   }
                   onChange={value => {
-                    SettingsDB.upsert(this.props.libraryItem._id, {
+                    LibraryOptionsDB.upsert(this.props.libraryItem._id, {
                       $set: {
                         'decisionMaker.video_size_range_include': value,
                       },
@@ -1775,7 +1775,7 @@ SettingsDB.insert(thisLibrary)
                       .video_height_range_include
                   }
                   onChange={value => {
-                    SettingsDB.upsert(this.props.libraryItem._id, {
+                    LibraryOptionsDB.upsert(this.props.libraryItem._id, {
                       $set: {
                         'decisionMaker.video_height_range_include': value,
                       },
@@ -1797,7 +1797,7 @@ SettingsDB.insert(thisLibrary)
                       .video_width_range_include
                   }
                   onChange={value => {
-                    SettingsDB.upsert(this.props.libraryItem._id, {
+                    LibraryOptionsDB.upsert(this.props.libraryItem._id, {
                       $set: {
                         'decisionMaker.video_width_range_include': value,
                       },
@@ -1871,7 +1871,7 @@ SettingsDB.insert(thisLibrary)
                       .audio_size_range_include
                   }
                   onChange={value => {
-                    SettingsDB.upsert(this.props.libraryItem._id, {
+                    LibraryOptionsDB.upsert(this.props.libraryItem._id, {
                       $set: {
                         'decisionMaker.audio_size_range_include': value,
                       },
@@ -1950,9 +1950,9 @@ SettingsDB.insert(thisLibrary)
 }
 
 export default withTracker(() => {
-  Meteor.subscribe('SettingsDB');
+  Meteor.subscribe('LibraryOptionsDB');
 
   return {
-    settings: SettingsDB.find({}, {sort: {priority: 1}}).fetch(),
+    settings: LibraryOptionsDB.find({}, {sort: {priority: 1}}).fetch(),
   };
 })(Folder);

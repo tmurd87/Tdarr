@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { withTracker } from 'meteor/react-meteor-data';
-import { FileDB,StatisticsDB,GlobalSettingsDB } from '../api/tasks.js';
+import { FileDB,StatisticsDB,GlobalOptionsDB } from '../api/tasks.js';
 import ReactDOM from 'react-dom';
 import ClipLoader from 'react-spinners/ClipLoader';
 import { Button } from 'react-bootstrap';
@@ -386,7 +386,7 @@ renderStats = () => {
       
   return  <div className="tabWrap" > <Tabs selectedIndex={ this.props.globalSettings[0].selectedStatTab != undefined ? this.props.globalSettings[0].selectedStatTab : 0} onSelect={tabIndex => {
 
-    GlobalSettingsDB.upsert('globalsettings',
+    GlobalOptionsDB.upsert('globalsettings',
     {
       $set: {
         selectedStatTab: tabIndex,
@@ -472,13 +472,13 @@ renderStats = () => {
 
 export default withTracker(() => {
 
-  Meteor.subscribe('GlobalSettingsDB');
+  Meteor.subscribe('GlobalOptionsDB');
   Meteor.subscribe('StatisticsDB');
 
   return {
 
     statistics:StatisticsDB.find({}).fetch(),
-    globalSettings: GlobalSettingsDB.find({}, {}).fetch(),
+    globalSettings: GlobalOptionsDB.find({}, {}).fetch(),
 
   };
 })(App);

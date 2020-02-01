@@ -14,7 +14,7 @@ import Modal from "reactjs-popup";
 
 import ClipLoader from 'react-spinners/ClipLoader';
 
-import { GlobalSettingsDB } from '../api/tasks.js';
+import { GlobalOptionsDB } from '../api/tasks.js';
 
 
 
@@ -109,7 +109,7 @@ class App extends Component {
       event.preventDefault();
     }
 
-    GlobalSettingsDB.upsert('globalsettings',
+    GlobalOptionsDB.upsert('globalsettings',
       {
         $set: {
           propertySearchLoading: true,
@@ -196,12 +196,12 @@ render( <div className="libraryContainer" ><SearchResults results={result} /></d
 
 export default withTracker(() => {
 
-  Meteor.subscribe('GlobalSettingsDB');
+  Meteor.subscribe('GlobalOptionsDB');
 
 
   return {
 
-    globalSettings: GlobalSettingsDB.find({}, {}).fetch(),
+    globalSettings: GlobalOptionsDB.find({}, {}).fetch(),
 
   };
 })(App);
