@@ -6,25 +6,36 @@ jobs:
     name: Build ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
 
+
+          # --------------------BEGIN WINDOWS BUILD-----------------------
+
+      #matrix can be referenced throughout workflows
+
     strategy:
       matrix:
         os: [windows-2019]
         node-version: [8.x]
 
     steps:
+      #This action checks-out your repository under $GITHUB_WORKSPACE, so your workflow can access it.
       - name: Checkout
         uses: actions/checkout@v2
 
+
+      #This action sets by node environment
       - name: Setup node enviroment
         uses: actions/setup-node@v1.1.2
         with:
           node-version: ${{ matrix.node-version }}
 
+     #GitHub Actions default shell on Windows runners is changing to PowerShell 10/23
       - name: Install Meteor
         run: |
           choco install meteor -y
           echo ::add-path::C:\Users\runneradmin\AppData\Local\.meteor
       
+
+      #specify cmd as powershell is default (necessary?)
       - name: Initialize NPM, and build bundle
         shell: cmd
         run: |
@@ -37,12 +48,21 @@ jobs:
             7z a -r .\out\tdarr-${{ matrix.os }}.zip .\tdarr-${{ matrix.os }}
 
       - name: Upload tdarr-${{ matrix.os }}.zip
+      #This uploads artifacts from your workflow.
         uses: actions/upload-artifact@v1
         with:
           name: tdarr-${{ matrix.os }}
           path: .\out
 
-  Build_sh:
+
+
+
+
+
+
+    # --------------------BEGIN macOS/LINUX BUILD-----------------------
+
+      Build_sh:
     name: Build ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
 
@@ -72,7 +92,7 @@ jobs:
             cd ../tdarr-${{ matrix.os }}/bundle/programs/
             rm -r \
               server/assets/app/HandBrakeCLI.exe \
-              server/assets/app/ccextractor/ccextractorwin.exe \
+              server/assets/app/fileScanner/ccextractor/ccextractorwin.exe \
               server/npm/node_modules/ffprobe-static/bin/win32/ \
               server/npm/node_modules/ffprobe-static/bin/darwin/ \
               server/npm/node_modules/nodegit/vendor/plink.exe \
@@ -84,14 +104,17 @@ jobs:
             cd ../tdarr-${{ matrix.os }}/bundle/programs/
             rm -r \
               server/assets/app/HandBrakeCLI.exe \
-              server/assets/app/ccextractor/ccextractorwin.exe \
+              server/assets/app/fileScanner/ccextractor/ccextractorwin.exe \
               server/npm/node_modules/ffprobe-static/bin/win32/ \
               server/npm/node_modules/ffprobe-static/bin/linux/ \
               server/npm/node_modules/nodegit/vendor/plink.exe \
               server/npm/node_modules/nodegit/vendor/pageant.exe
 
+
+        #-q 'quiet zip, no output to terminal', -r replace files in zip if exist     
       - name: Pack ${{ matrix.os }}.zip (sh)
         if: matrix.os == 'ubuntu-18.04' || matrix.os == 'macos-10.15'
+        
         run: |
             mkdir ../out
             zip -r -q ../out/tdarr-${{ matrix.os }}.zip ../tdarr-${{ matrix.os }}/
@@ -101,6 +124,13 @@ jobs:
         with:
           name: tdarr-${{ matrix.os }}
           path: ../out
+
+
+
+
+
+
+
 
   Release:
     needs: [Build_win, Build_sh]
@@ -129,9 +159,15 @@ jobs:
           draft: false
           prerelease: true
 
+          
+        #Path to download buil artifact to, which will then be uploaded
       - name: Prep artifact download
         run: mkdir ../upload
+        
 
+
+
+        #Upload linux
       - name: Download Linux artifict
         uses: actions/download-artifact@v1
         with:
@@ -148,6 +184,11 @@ jobs:
           asset_name: Tdarr-Linux-${{ steps.meta_gathering.outputs.version }}.zip
           asset_content_type: application/zip
 
+
+
+
+       #Upload macos
+
       - name: Download macOS artifict
         uses: actions/download-artifact@v1
         with:
@@ -163,6 +204,9 @@ jobs:
           asset_path: ../upload/tdarr-macos-10.15.zip
           asset_name: Tdarr-macOS-${{ steps.meta_gathering.outputs.version }}.zip
           asset_content_type: application/zip
+
+
+           #Upload win
 
       - name: Download Windows artifict
         uses: actions/download-artifact@v1
