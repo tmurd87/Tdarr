@@ -6,11 +6,12 @@ jobs:
     name: Build ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
 
-    strategy:
 
-      # --------------------BEGIN WINDOWS BUILD-----------------------
+          # --------------------BEGIN WINDOWS BUILD-----------------------
 
       #matrix can be referenced throughout workflows
+
+    strategy:
       matrix:
         os: [windows-2019]
         node-version: [8.x]
@@ -109,9 +110,11 @@ jobs:
               server/npm/node_modules/nodegit/vendor/plink.exe \
               server/npm/node_modules/nodegit/vendor/pageant.exe
 
+
+        #-q 'quiet zip, no output to terminal', -r replace files in zip if exist     
       - name: Pack ${{ matrix.os }}.zip (sh)
         if: matrix.os == 'ubuntu-18.04' || matrix.os == 'macos-10.15'
-        #-q 'quiet zip, no output to terminal', -r replace files in zip if exist
+        
         run: |
             mkdir ../out
             zip -r -q ../out/tdarr-${{ matrix.os }}.zip ../tdarr-${{ matrix.os }}/
