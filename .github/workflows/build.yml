@@ -84,7 +84,7 @@ jobs:
         run: |
           curl https://install.meteor.com/ | sh
           npm install --production
-          meteor build --server localhost:8265 --directory ../tdarr-${{ matrix.os }}
+          meteor build --server localhost:8265 --directory ../tdarr-${{ matrix.os }} --architecture os.windows.x86_64
 
       - name: Clean Linux
         if: matrix.os == 'ubuntu-18.04'
