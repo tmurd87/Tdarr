@@ -62,7 +62,7 @@ jobs:
 
 # --------------------BEGIN macOS/LINUX BUILD-----------------------
   
-Build_sh:
+  Build_sh:
     name: Build ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
 
@@ -127,7 +127,7 @@ Build_sh:
 
 
 
-Release:
+  Release:
     needs: [Build_win, Build_sh]
     runs-on: ubuntu-18.04
     if: github.ref == 'refs/heads/master'
