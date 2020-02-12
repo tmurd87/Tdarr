@@ -36,14 +36,10 @@ jobs:
       
 
       #specify cmd as powershell is default (necessary?)
-      - name: Initialize NPM
-        shell: cmd
+      - name: Initialize NPM & build
+
         run: |
           npm install --production
-
-      - name: Build bundle
-        shell: cmd
-        run: |
           meteor build --server localhost:8265 --directory .\tdarr-${{ matrix.os }}
 
       - name: Pack ${{ matrix.os }}.zip
