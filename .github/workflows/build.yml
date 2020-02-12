@@ -7,7 +7,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
 
-          # --------------------BEGIN WINDOWS BUILD-----------------------
+          # BEGIN WINDOWS BUILD
 
       #matrix can be referenced throughout workflows
 
@@ -60,7 +60,7 @@ jobs:
 
 
 
-    # --------------------BEGIN macOS/LINUX BUILD-----------------------
+# BEGIN macOS/LINUX BUILD
 
       Build_sh:
     name: Build ${{ matrix.os }}
