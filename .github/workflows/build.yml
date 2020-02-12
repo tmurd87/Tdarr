@@ -36,10 +36,14 @@ jobs:
       
 
       #specify cmd as powershell is default (necessary?)
-      - name: Initialize NPM, and build bundle
+      - name: Initialize NPM
         shell: cmd
         run: |
           npm install --production
+
+      - name: Build bundle
+        shell: cmd
+        run: |
           meteor build --server localhost:8265 --directory .\tdarr-${{ matrix.os }}
 
       - name: Pack ${{ matrix.os }}.zip
@@ -128,7 +132,7 @@ jobs:
 
 
   Release:
-    needs: [Build_win, Build_sh]
+    needs: [Build_win, Build_sh] #Must wait for builds to finish
     runs-on: ubuntu-18.04
     if: github.ref == 'refs/heads/master'
     steps:
