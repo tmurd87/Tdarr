@@ -163,7 +163,7 @@ jobs:
           tag_name: ${{ steps.meta_gathering.outputs.version }}
           release_name: ${{ steps.meta_gathering.outputs.relname }}
           body: ${{ steps.meta_gathering.outputs.changelog }}
-          draft: false
+          draft: true
           prerelease: true
 
           
