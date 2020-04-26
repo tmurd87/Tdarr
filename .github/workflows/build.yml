@@ -56,7 +56,7 @@ jobs:
       - name: Build
         shell: cmd
         run: |
-          meteor build --server localhost:8265 --directory ../tdarr-${{ matrix.os }} --architecture os.windows.x86_64 --allow-incompatible-update
+          meteor build --directory ../tdarr-${{ matrix.os }} --allow-incompatible-update --server-only
 
 
       - name: Pack ${{ matrix.os }}.zip
