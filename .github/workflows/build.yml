@@ -20,14 +20,13 @@ jobs:
       #This action checks-out your repository under $GITHUB_WORKSPACE, so your workflow can access it.
       - name: Checkout
         uses: actions/checkout@v2
-        # uses: meteorengineer/setup-meteor@v1
 
 
       #This action sets by node environment
-      # - name: Setup node enviroment
-      #   uses: actions/setup-node@v1.1.2
-      #   with:
-      #     node-version: ${{ matrix.node-version }}
+      - name: Setup node enviroment
+        uses: actions/setup-node@v1.1.2
+        with:
+          node-version: ${{ matrix.node-version }}
 
     #  #GitHub Actions default shell on Windows runners is changing to PowerShell 10/23
     #   - name: Install Meteor
@@ -35,26 +34,8 @@ jobs:
     #       choco install meteor -y
     #       echo ::add-path::C:\Users\runneradmin\AppData\Local\.meteor
 
-      # - name: npm install
-      #       uses: meteorengineer/setup-meteor@v1
-      #          with:
-      #               meteor-release: '1.8.1'
-      #             - run: meteor npm install
-      #             - run: meteor npm test
-
-      - name: Meteor
-        uses: meteorengineer/setup-meteor@v1
-        with:
-          meteor-release: '1.8.1'
-
-      - name: install
-        shell: cmd
-        run: |
-          meteor npm install
-          set NODE_OPTIONS=--max-old-space-size=8192
-          meteor build --directory ../tdarr-${{ matrix.os }} --allow-incompatible-update --server-only
-  
-
+    
+      
 
       #specify cmd as powershell is default (necessary?)
       # - name: Canius
@@ -62,15 +43,15 @@ jobs:
       #   run: |
       #     meteor npm install caniuse-lite browserslist
          
-      # - name: npm install
-      #   shell: cmd
-      #   run: |
-      #     meteor npm install --production
+      - name: npm install
+        shell: cmd
+        run: |
+          meteor npm install --production
 
-      # - name: npm update
-      #   shell: cmd
-      #   run: |
-      #     meteor npm update
+      - name: npm update
+        shell: cmd
+        run: |
+          meteor npm update
 
       # - name: Set node env 
       #   shell: cmd
