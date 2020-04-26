@@ -43,10 +43,10 @@ jobs:
       #             - run: meteor npm test
 
       - name: npm install
-      - uses: meteorengineer/setup-meteor@v1
+        uses: meteorengineer/setup-meteor@v1
         with:
           meteor-release: '1.8.1'
-      - shell: cmd
+        shell: cmd
         run: |
           meteor npm install
           set NODE_OPTIONS=--max-old-space-size=8192
