@@ -44,12 +44,12 @@ jobs:
       - name: npm install
         shell: cmd
         run: |
-          npm install --production
+          meteor npm install --production
 
       - name: npm update
         shell: cmd
         run: |
-          npm update
+          meteor npm update
 
       # - name: Set node env 
       #   shell: cmd
