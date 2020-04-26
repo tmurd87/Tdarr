@@ -46,7 +46,7 @@ jobs:
       - name: npm install
         shell: cmd
         run: |
-          npm ci --production
+          npm install --production
 
       - name: Build
         shell: cmd
