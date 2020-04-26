@@ -39,7 +39,7 @@ jobs:
       - name: Canius
         shell: cmd
         run: |
-          npm update caniuse-lite browserslist
+          npm install caniuse-lite browserslist
          
        
 
@@ -47,6 +47,11 @@ jobs:
         shell: cmd
         run: |
           npm install --production
+
+      - name: npm update
+        shell: cmd
+        run: |
+          npm update
 
       - name: Build
         shell: cmd
