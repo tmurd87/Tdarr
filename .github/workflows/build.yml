@@ -35,33 +35,34 @@ jobs:
           echo ::add-path::C:\Users\runneradmin\AppData\Local\.meteor
       
 
-      #specify cmd as powershell is default (necessary?)
-      - name: Canius
-        shell: cmd
-        run: |
-          npm install caniuse-lite browserslist
+      # #specify cmd as powershell is default (necessary?)
+      # - name: Canius
+      #   shell: cmd
+      #   run: |
+      #     npm install caniuse-lite browserslist
          
        
 
-      - name: npm install
-        shell: cmd
-        run: |
-          npm install --production
-
-      - name: npm update
-        shell: cmd
-        run: |
-          npm update
-
-      # - name: Set node env 
+      # - name: npm install
       #   shell: cmd
       #   run: |
-      #     set NODE_OPTIONS=–max-old-space-size=8192
+      #     npm install --production
+
+      # - name: npm update
+      #   shell: cmd
+      #   run: |
+      #     npm update
+
+      # # - name: Set node env 
+      # #   shell: cmd
+      # #   run: |
+      # #     set NODE_OPTIONS=–max-old-space-size=8192
 
       - name: Build
         shell: cmd
         run: |
           set NODE_OPTIONS=--max-old-space-size=8192
+          npm install --production
           meteor build --directory ../tdarr-${{ matrix.os }} --allow-incompatible-update --server-only
 
 
