@@ -53,9 +53,15 @@ jobs:
         run: |
           npm update
 
+      # - name: Set node env 
+      #   shell: cmd
+      #   run: |
+      #     set NODE_OPTIONS=–max-old-space-size=8192
+
       - name: Build
         shell: cmd
         run: |
+          set NODE_OPTIONS=–max-old-space-size=8192
           meteor build --directory ../tdarr-${{ matrix.os }} --allow-incompatible-update --server-only
 
 
