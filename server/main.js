@@ -1220,7 +1220,7 @@ function main() {
         fsextra.removeSync(homePath + '/Tdarr/Plugins/temp')
       } catch (err) { console.log(err.stack) }
 
-      var clone = require('git-clone');
+      var clone = ''
 
       console.log('Cloning plugins')
 

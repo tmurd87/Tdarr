@@ -37,6 +37,7 @@
     "interweave": "^12.5.0",
     "is-docker": "^2.0.0",
     "meteor-babel-helpers": "0.0.3",
+    "meteor-node-stubs": "^1.0.0",
     "meteor-promise": "^0.8.7",
     "node-schedule": "^1.3.2",
     "os-utils": "0.0.14",
