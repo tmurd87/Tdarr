@@ -39,7 +39,7 @@ jobs:
       - name: Canius
         shell: cmd
         run: |
-          npm install caniuse-lite browserslist
+          meteor npm install caniuse-lite browserslist
          
       - name: npm install
         shell: cmd
