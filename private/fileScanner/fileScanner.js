@@ -45,6 +45,7 @@ function logger(type, text) {
   const runFFprobe = importFresh("./runFFprobe.js");
   const runExifTool = importFresh("./runExifTool.js");
   const runCCExtractor = importFresh("./runCCExtractor.js");
+  const runMediaInfo = importFresh("./runMediaInfo.js");
   
   if (mode == 0) {
     if (isDocker()) {
@@ -225,8 +226,9 @@ function logger(type, text) {
             try {
               var fileInfo = {
                 ffProbeData: "",
+                mediaInfo: "",
                 exifToolData: "",
-                ccextractorData: "",
+                ccextractorData: ""
               };
               logger("info", "Running ffmpeg on file");
   
@@ -243,6 +245,21 @@ function logger(type, text) {
                 });
   
               if (fileInfo.ffProbeData.result != "error") {
+
+                logger("info", "Running mediaInfo on file");
+
+                await runMediaInfo(filepath)
+                  .then((res) => {
+                    fileInfo.mediaInfo = res;
+                  })
+                  .catch((err) => {
+                    console.log(err);
+                    fileInfo.mediaInfo = {
+                      result: "error",
+                      data: "mediaInfo encountered an error " + err,
+                    };
+                  });
+
                 logger("info", "Running exiftool on file");
   
                 await runExifTool(filepath, exiftool)
@@ -275,6 +292,7 @@ function logger(type, text) {
                   extractData(
                     filepath,
                     fileInfo.ffProbeData.data,
+                    fileInfo.mediaInfo.data,
                     fileInfo.exifToolData.data,
                     fileInfo.ccextractorData.data
                   );
@@ -282,6 +300,7 @@ function logger(type, text) {
                   extractData(
                     filepath,
                     fileInfo.ffProbeData.data,
+                    fileInfo.mediaInfo.data,
                     fileInfo.exifToolData.data,
                     null
                   );
@@ -350,13 +369,14 @@ function logger(type, text) {
       addFileToDB(filepath, thisFileObject, obj);
     }
   
-    function extractData(filepath, jsonData, tags, hasClosedCaptions) {
+    function extractData(filepath, jsonData, mediaInfo, tags, hasClosedCaptions) {
       var thisFileObject = {};
   
       if (closedCaptionScan == "true") {
         thisFileObject.hasClosedCaptions = hasClosedCaptions;
       }
-  
+
+      thisFileObject.mediaInfo = mediaInfo;
       thisFileObject.meta = tags;
       logger("info", `Beginning extractData on:${filepath}`);
       var container = path.extname(filepath).split(".").join("");
